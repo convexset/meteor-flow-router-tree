@@ -1,0 +1,89 @@
+<template name="MainLayout">
+	{{> Template.dynamic template=header data=allParams}}
+	<hr>
+	<main style="padding-top:110px; padding-bottom:110px;">
+		{{>Template.dynamic template=content data=allParams}}
+		
+		<h3>Node Tree</h3>
+		<div>{{> NodeTree nodeName='rootNode'}}</div>
+		
+	</main>
+	<hr>
+	{{>Template.dynamic template=footer data=allParams}}
+</template>
+
+<template name="Header">
+	<h1>Header</h1>
+	Look in the console.
+</template>
+
+<template name="Footer">
+	<h1>Footer (with random query parameters)</h1>
+	{{#each enumerate nodes}}
+		<a href="{{value.route}}{{randomParams}}">{{value.name}}</a>
+	{{/each}}
+</template>
+
+<template name="ParamTables">
+	<table border=1>
+		<tr>
+			<th colspan=2>Query Params</th>
+		</tr>
+		{{#each repackageDictionaryAsArray queryParams}}
+			<tr>
+				<td>{{key}}</td>
+				<td>{{value}}</td>
+			</tr>
+		{{/each}}
+	</table>
+</template>
+
+<template name="NodeTree">
+	{{#if greaterThan (length childNodes) 0}}
+		<table border=1>
+			{{#each enumerate childNodes}}
+				<tr>
+					{{#if equalTo idx 0}}
+						<td rowspan="{{length childNodes}}">
+							{{../nodeName}}
+						</td>
+					{{/if}}
+					<td>
+						{{> NodeTree nodeName=value}}
+					</td>
+				</tr>
+			{{/each}}
+		</table>
+	{{else}}
+		{{nodeName}}
+	{{/if}}
+</template>
+
+<template name="Main">
+	Main
+	<div>{{> ParamTables queryParams=queryParams}}</div>
+</template>
+
+<template name="SectionA">
+	Section A
+	
+	{{> ParamTables queryParams=queryParams}}
+</template>
+
+<template name="SectionAA">
+	Subsection A-A
+	
+	{{> ParamTables queryParams=queryParams}}
+</template>
+
+<template name="SectionAB">
+	Subsection A-B
+	
+	{{> ParamTables queryParams=queryParams}}
+</template>
+
+<template name="SectionB">
+	Section B
+	
+	{{> ParamTables queryParams=queryParams}}
+</template>
