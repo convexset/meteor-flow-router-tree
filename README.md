@@ -2,6 +2,21 @@
 
 A tool for facilitating the creation of a clean set of [FlowRouter](https://github.com/kadirahq/flow-router) routes.
 
+## Table of Contents
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Install](#install)
+- [Usage By Example](#usage-by-example)
+    - [Options](#options)
+    - [Additional Properties and Methods (Post Creation)](#additional-properties-and-methods-post-creation)
+    - [Possibly Useful Helpers](#possibly-useful-helpers)
+    - [Debug](#debug)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Install
 
 This is available as [`convexset:flow-router-tree`](https://atmospherejs.com/convexset/flow-router-tree) on [Atmosphere](https://atmospherejs.com/). (Install with `meteor add convexset:flow-router-tree`.)
