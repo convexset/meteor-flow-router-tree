@@ -1,6 +1,6 @@
 Package.describe({
 	name: 'convexset:flow-router-tree',
-	version: '0.1.2',
+	version: '0.1.3',
 	summary: 'A tool for facilitating the maintenance of FlowRouter routes cleanly.',
 	git: 'https://github.com/convexset/meteor-flow-router-tree',
 	documentation: '../../README.md'
@@ -13,6 +13,7 @@ Package.onUse(function(api) {
 		'underscore',
 		'check',
 		'kadira:flow-router@2.9.0',
+		'kadira:blaze-layout@2.2.0',
 		'ramda:ramda@0.17.1',
 		'convexset:package-utils@0.1.3',
 		'convexset:match-extensions@0.1.1'

@@ -19,7 +19,7 @@ ejson
 
 
 kadira:blaze-layout     # https://github.com/kadirahq/blaze-layout
-#kadira:flow-router      # https://github.com/kadirahq/flow-router 
+kadira:flow-router      # https://github.com/kadirahq/flow-router 
 
 convexset:template-helpers
 convexset:flow-router-tree

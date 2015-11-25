@@ -1,6 +1,7 @@
-/* global FlowRouterTree: true */
+/* global BlazeLayout: true */
 /* global PackageUtilities: true */
 /* global Match: true */
+/* global FlowRouterTree: true */
 
 FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
