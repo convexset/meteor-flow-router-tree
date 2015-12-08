@@ -10,7 +10,6 @@ FlowRouterTree = (function() {
 	// Route names and routes
 	var _flowRouterRouteNames = [];
 	var _flowRouterRoutes = [];
-
 	var __frt = function FlowRouterTree() {};
 	var __nd = function NodeDictionary() {};
 	var __ed = function EdgeDictionary() {};
@@ -290,57 +289,66 @@ FlowRouterTree = (function() {
 		PackageUtilities.addImmutablePropertyArray(parameterizedAction, 'requiredActionParams', requiredActionParams);
 
 		// Create an action given params
-		Object.defineProperty(parameterizedAction, 'makeAction', {
-			value: function makeAction(actionParams) {
-				parameterizedAction.requiredActionParams.forEach(function(p) {
-					if (typeof actionParams[p] === "undefined") {
-						throw new Meteor.Error("required-parameter-absent", "Required parameter " + p + " missing.");
-					}
-				});
-				var _actionParams = _.extend({}, actionParams);
-				return R.curry(parameterizedAction)(R.__, R.__, _actionParams);
-			},
-			writeable: false,
-			enumerable: true,
-			configurable: false
-		});
+		function makeAction(actionParams) {
+			parameterizedAction.requiredActionParams.forEach(function(p) {
+				if (typeof actionParams[p] === "undefined") {
+					throw new Meteor.Error("required-parameter-absent", "Required parameter " + p + " missing.");
+				}
+			});
+			var _actionParams = _.extend({}, actionParams);
+
+			// curry and return
+			return function(params, queryParams) {
+				return parameterizedAction(params, queryParams, _actionParams);
+			};
+		}
+		PackageUtilities.addImmutablePropertyFunction(parameterizedAction, 'makeAction', makeAction);
 
 		return parameterizedAction;
 	}
-
 	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'configureParameterizedAction', configureParameterizedAction);
 
-	Object.defineProperty(FlowRouterTree, 'createNode', {
-		value: function createNode(options) {
-			return new FlowRouterTreeNode(options);
-		},
-		writeable: false,
-		enumerable: true,
-		configurable: false
+	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'createNode', function createNode(options) {
+		return new FlowRouterTreeNode(options);
 	});
 
 	// Useful Samples for Parameterized Actions
 	PackageUtilities.addImmutablePropertyObject(FlowRouterTree, 'SampleParameterizedActions', {
-		blazeLayoutRenderThreeComponent: FlowRouterTree.configureParameterizedAction(function blazeLayoutRenderThreeComponent(params, queryParams, actionParams) {
-			BlazeLayout.render(actionParams.layout, {
-				header: actionParams.header,
-				content: actionParams.content,
-				footer: actionParams.footer,
-				allParams: {
-					params: params,
-					queryParams: queryParams
-				}
-			});
-		}, ['layout', 'header', 'content', 'footer']),
+		// one component layout
 		blazeLayoutRenderOneComponent: FlowRouterTree.configureParameterizedAction(function blazeLayoutRenderOneComponent(params, queryParams, actionParams) {
 			BlazeLayout.render(actionParams.layout, {
 				content: actionParams.content,
-				allParams: {
+				routeParams: {
 					params: params,
 					queryParams: queryParams
 				}
 			});
 		}, ['layout', 'content']),
+
+		// two component layout
+		blazeLayoutRenderTwoComponent: FlowRouterTree.configureParameterizedAction(function blazeLayoutRenderTwoComponent(params, queryParams, actionParams) {
+			BlazeLayout.render(actionParams.layout, {
+				content: actionParams.content,
+				footer: actionParams.footer,
+				routeParams: {
+					params: params,
+					queryParams: queryParams
+				}
+			});
+		}, ['layout', 'content', 'footer']),
+
+		// three component layout
+		blazeLayoutRenderThreeComponent: FlowRouterTree.configureParameterizedAction(function blazeLayoutRenderThreeComponent(params, queryParams, actionParams) {
+			BlazeLayout.render(actionParams.layout, {
+				header: actionParams.header,
+				content: actionParams.content,
+				footer: actionParams.footer,
+				routeParams: {
+					params: params,
+					queryParams: queryParams
+				}
+			});
+		}, ['layout', 'header', 'content', 'footer']),
 	});
 
 	// Useful Samples for Triggers

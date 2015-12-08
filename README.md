@@ -44,7 +44,7 @@ var root = FlowRouterTree.createNode({
                 header: actionParams.header,
                 content: actionParams.content,
                 footer: actionParams.footer,
-                allParams: {
+                routeParams: {
                     params: params,
                     queryParams: queryParams
                 }
