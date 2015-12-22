@@ -265,7 +265,7 @@ FlowRouterTree = (function() {
 	function configureParameterizedAction(parameterizedAction, requiredActionParams) {
 
 		// Require parameterizedAction to be a function
-		if (!(parameterizedAction instanceof Function)) {
+		if (!_.isFunction(parameterizedAction)) {
 			throw new Meteor.Error("argument-error", "parameterizedAction should be a function taking 3 parameters with the 3rd being for action parameters.");
 		}
 		var argumentList = (parameterizedAction).toString().split("{")[0].match(/\(([^\)]*)\)/i)[1].split(",");
