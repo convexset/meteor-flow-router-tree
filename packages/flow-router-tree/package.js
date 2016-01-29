@@ -14,7 +14,7 @@ Package.onUse(function(api) {
 		'check',
 		'kadira:flow-router@2.9.0',
 		'kadira:blaze-layout@2.2.0',
-		'convexset:package-utils@0.1.8',
+		'convexset:package-utils@0.1.9',
 		'convexset:match-extensions@0.1.1'
 	]);
 	api.addFiles(['flow-router-tree.js']);
