@@ -1,6 +1,6 @@
 # FlowRouterTree
 
-A tool for facilitating the creation of a clean set of [FlowRouter](https://github.com/kadirahq/flow-router) routes.
+A tool for facilitating the creation of a clean set of [FlowRouter](https://github.com/kadirahq/flow-router) routes. The idea is that routes might be viewed as a forest of trees, and child nodes (routes) should inherit configuration aspects of parent nodes (routes) by default unless the settings are explicitly changed. This cleans up one's `routes.js` substantially.
 
 ## Table of Contents
 
