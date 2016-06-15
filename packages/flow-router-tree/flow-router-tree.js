@@ -1,5 +1,4 @@
 /* global BlazeLayout: true */
-/* global Match: true */
 /* global FlowRouterTree: true */
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
@@ -87,9 +86,12 @@ FlowRouterTree = (function() {
 			description: ""
 		}, options);
 
+		// TODO: Make this less ugzzz
 		_.forEach(_options, function(v, k) {
-			if (Match.test(v, Match.isPrimitive)) {
+			if (PackageUtilities.isKindaUncloneable(v)) {
 				PackageUtilities.addImmutablePropertyValue(instance, k, v);
+			} else if (_.isArray(v)) {
+				PackageUtilities.addImmutablePropertyArray(instance, k, v);
 			} else {
 				PackageUtilities.addImmutablePropertyObject(instance, k, v);
 			}
