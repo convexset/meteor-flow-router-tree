@@ -1,7 +1,12 @@
 /* global BlazeLayout: true */
-/* global PackageUtilities: true */
 /* global Match: true */
 /* global FlowRouterTree: true */
+
+import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
+checkNpmVersions({
+  'package-utils': '^0.2.1'
+});
+const PackageUtilities = require('package-utils');
 
 FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
