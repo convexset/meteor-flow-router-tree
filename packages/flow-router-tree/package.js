@@ -1,4 +1,5 @@
 Package.describe({
+	// [validatis:stack]
 	name: 'convexset:flow-router-tree',
 	version: '0.1.3_7',
 	summary: 'A tool for facilitating the maintenance of FlowRouter routes cleanly.',
