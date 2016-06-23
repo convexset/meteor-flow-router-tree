@@ -11,6 +11,7 @@ A tool for facilitating the creation of a clean set of [FlowRouter](https://gith
 - [Install](#install)
 - [Usage By Example](#usage-by-example)
     - [Options](#options)
+    - [The `accessChecks` key: Using convexset:access-check](#the-accesschecks-key-using-convexsetaccess-check)
     - [Additional Properties and Methods (Post Creation)](#additional-properties-and-methods-post-creation)
     - [Possibly Useful Helpers](#possibly-useful-helpers)
     - [Debug](#debug)
