@@ -15,7 +15,7 @@ Package.onUse(function(api) {
 		'session',
 		'kadira:flow-router@2.12.1',
 		'kadira:blaze-layout@2.3.0',
-		'convexset:access-checks@0.1.0',
+		'convexset:access-check@0.1.0',
 		'tmeasday:check-npm-versions@0.3.1'
 	]);
 	api.addFiles(['flow-router-tree.js']);
