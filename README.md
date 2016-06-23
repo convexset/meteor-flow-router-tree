@@ -116,6 +116,28 @@ Option                      | Description
 `triggersExit`              | A dictionary (object) of `FlowRouter` entry [triggers](https://github.com/kadirahq/flow-router#triggers). Inherits from parents by key (name). Override using `null`.
 `makeRoute`                 | Whether node provides an actual route (if false, it is just a placeholder)
 `description`               | A text description of the node
+`accessChecks`               | See [convexset:access-check](https://atmospherejs.com/convexset/access-check#meteor-methods-and-publications) and use the same format as the `accessChecks` key. (Leaving unset implies inheritance from parent; Defining `accessChecks` overwrites checks on the parent, if applicable; Set to `null` to not inherit checks from parent)
+
+#### The `accessChecks` key: Using [convexset:access-check](https://atmospherejs.com/convexset/access-check)
+
+Use the same syntax as access checks for Meteor Methods and Publications in [convexset:access-check](https://atmospherejs.com/convexset/access-check#meteor-methods-and-publications) apply (via the `accessChecks` key).
+
+The `where` sub-key is ignored, however and set to refer to the client.
+
+Generally speaking, client-side failure callbacks should result in routing to a page which the current user is more likely to be authorized to be on. For example, access controls on a restricted route/template might boot an unauthorized user to the "main user dashboard" (MUD?) and access controls on the MUD might boot an unauthorized user to the login page (where probably no access controls apply except perhaps geographical ones by IP address, in which case...)
+
+Access checks are implemented as ["entry triggers"](https://github.com/kadirahq/flow-router/#triggers) and will be the first in the list.
+
+Checks and failure callbacks are invoked with the following context (i.e.: "`this`"):
+```
+{
+    context: context,
+    redirect: redirect,
+    stop: stop
+}
+```
+as provided in [FlowRouter triggers](https://github.com/kadirahq/flow-router/#triggers) (see this for use of [`stop`](https://github.com/kadirahq/flow-router/#stopping-the-callback-with-triggers)).
+
 
 #### Additional Properties and Methods (Post Creation)
 

@@ -9,6 +9,8 @@ checkNpmVersions({
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
+import { AccessCheck } from "meteor/convexset:access-check";
+
 FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
 	// Set Up
@@ -83,10 +85,10 @@ FlowRouterTree = (function() {
 			triggersExit: {},
 			providesParentRoutePrefix: false,
 			makeRoute: true,
-			description: ""
+			description: "",
+			accessChecks: (void 0),  // See: https://atmospherejs.com/convexset/access-check
 		}, options);
 
-		// TODO: Make this less ugzzz
 		_.forEach(_options, function(v, k) {
 			if (PackageUtilities.isKindaUncloneable(v)) {
 				PackageUtilities.addImmutablePropertyValue(instance, k, v);
@@ -208,12 +210,61 @@ FlowRouterTree = (function() {
 			}
 		}
 
+		const ACCESS_CHECK_KEY = "[[[convexset:access-check]]]";
+
 		function takeNonNullValues(o) {
-			return _.map(o, function(v) {
-				return v;
-			}).filter(function(x) {
-				return x !== null;
+			var ret = [];
+
+			_.forEach(o, function(v, k) {
+				if (k === ACCESS_CHECK_KEY) {
+					ret.unshift(v);
+				} else {
+					ret.push(v);
+				}
 			});
+
+			return ret.filter(x => x !== null);
+		}
+
+		function extendWithAccessChecks(triggers) {
+			var ret = PackageUtilities.shallowCopy(triggers);
+
+			ret[ACCESS_CHECK_KEY] = (this.accessChecks === null) ? null: function accessCheckTrigger(_context, redirect, stop) {
+				var context = {
+					context: _context,
+					redirect: redirect,
+					stop: stop
+				};
+				var allChecksPassed = true;
+
+				this.accessChecks
+					.map(o => typeof o === "string" ? {
+						name: o
+					} : o)
+					.forEach(function runCheck({
+						name, argumentMap = x => x, where
+					}) {
+						if (!allChecksPassed) {
+							return;
+						}
+						var outcome;
+						try {
+							outcome = AccessCheck.executeCheck.call(context, {
+								checkName: name,
+								where: where,
+								params: argumentMap(params),
+								executeFailureCallback: true
+							});
+						} catch (e) {
+							allChecksPassed = false;
+						}
+						if (outcome.checkDone && !outcome.result) {
+							allChecksPassed = false;
+						}
+					});
+			};
+
+			return ret;
 		}
 
 		if (this.makeRoute) {
@@ -252,7 +303,7 @@ FlowRouterTree = (function() {
 			}
 			FlowRouter.route(this.route, {
 				name: this.name,
-				triggersEnter: takeNonNullValues(triggers.triggersEnter),
+				triggersEnter: takeNonNullValues(extendWithAccessChecks(triggers.triggersEnter)),
 				triggersExit: takeNonNullValues(triggers.triggersExit),
 				action: actionFactory.makeAction(params)
 			});

@@ -1,7 +1,7 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:flow-router-tree',
-	version: '0.1.3_7',
+	version: '0.1.4',
 	summary: 'A tool for facilitating the maintenance of FlowRouter routes cleanly.',
 	git: 'https://github.com/convexset/meteor-flow-router-tree',
 	documentation: '../../README.md'
@@ -13,20 +13,11 @@ Package.onUse(function(api) {
 		'ecmascript',
 		'check',
 		'session',
-		'kadira:flow-router@2.9.0',
-		'kadira:blaze-layout@2.2.0',
+		'kadira:flow-router@2.12.1',
+		'kadira:blaze-layout@2.3.0',
+		'convexset:access-checks@0.1.0',
 		'tmeasday:check-npm-versions@0.3.1'
-	]);
-	api.imply([
-		'session',
-		'kadira:flow-router@2.9.0'
 	]);
 	api.addFiles(['flow-router-tree.js']);
 	api.export('FlowRouterTree');
-});
-
-Package.onTest(function(api) {
-	api.use(['tinytest', 'test-helpers'], 'client');
-	api.use(['ecmascript', 'convexset:flow-router-tree']);
-	api.addFiles(['tests.js'], 'client');
 });
