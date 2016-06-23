@@ -132,12 +132,13 @@ Access checks are implemented as ["entry triggers"](https://github.com/kadirahq/
 Checks and failure callbacks are invoked with the following context (i.e.: "`this`"):
 ```
 {
+    contextType: "flow-router-tree",
     context: context,
     redirect: redirect,
     stop: stop
 }
 ```
-as provided in [FlowRouter triggers](https://github.com/kadirahq/flow-router/#triggers) (see this for use of [`stop`](https://github.com/kadirahq/flow-router/#stopping-the-callback-with-triggers)).
+where `context`, `redirect` and `stop` are as outlined in [FlowRouter triggers](https://github.com/kadirahq/flow-router/#triggers) (see this for use of [`stop`](https://github.com/kadirahq/flow-router/#stopping-the-callback-with-triggers)).
 
 
 #### Additional Properties and Methods (Post Creation)

@@ -231,6 +231,7 @@ FlowRouterTree = (function() {
 
 			ret[ACCESS_CHECK_KEY] = (this.accessChecks === null) ? null: function accessCheckTrigger(_context, redirect, stop) {
 				var context = {
+					contextType: "flow-router-tree",
 					context: _context,
 					redirect: redirect,
 					stop: stop
