@@ -251,7 +251,7 @@ FlowRouterTree = (function() {
 						try {
 							outcome = AccessCheck.executeCheck.call(context, {
 								checkName: name,
-								where: where,
+								where: AccessCheck.CLIENT_ONLY,
 								params: argumentMap(params),
 								executeFailureCallback: true
 							});
