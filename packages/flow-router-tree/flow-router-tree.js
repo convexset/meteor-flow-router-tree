@@ -229,7 +229,16 @@ FlowRouterTree = (function() {
 		function extendWithAccessChecks(triggers) {
 			var ret = PackageUtilities.shallowCopy(triggers);
 
-			ret[ACCESS_CHECK_KEY] = (this.accessChecks === null) ? null: function accessCheckTrigger(_context, redirect, stop) {
+			if (this.accessChecks === null) {
+				ret[ACCESS_CHECK_KEY] = null;
+				return ret;
+			}
+
+			if (typeof this.accessChecks === "undefined") {
+				return ret;
+			}
+
+			ret[ACCESS_CHECK_KEY] = function accessCheckTrigger(_context, redirect, stop) {
 				var context = {
 					contextType: "flow-router-tree",
 					context: _context,
