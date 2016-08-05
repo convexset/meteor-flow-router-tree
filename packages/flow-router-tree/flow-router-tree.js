@@ -226,7 +226,7 @@ FlowRouterTree = (function() {
 			return ret.filter(x => x !== null);
 		}
 
-		function extendWithAccessChecks(triggers) {
+		function extendWithAccessChecks(triggers, params) {
 			var ret = PackageUtilities.shallowCopy(triggers);
 
 			if (this.accessChecks === null) {
@@ -252,7 +252,7 @@ FlowRouterTree = (function() {
 						name: o
 					} : o)
 					.forEach(function runCheck({
-						name, argumentMap = x => x, where
+						name, argumentMap = x => x
 					}) {
 						if (!allChecksPassed) {
 							return;
@@ -313,7 +313,7 @@ FlowRouterTree = (function() {
 			}
 			FlowRouter.route(this.route, {
 				name: this.name,
-				triggersEnter: takeNonNullValues(extendWithAccessChecks(triggers.triggersEnter)),
+				triggersEnter: takeNonNullValues(extendWithAccessChecks(triggers.triggersEnter, params)),
 				triggersExit: takeNonNullValues(triggers.triggersExit),
 				action: actionFactory.makeAction(params)
 			});

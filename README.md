@@ -140,6 +140,8 @@ Checks and failure callbacks are invoked with the following context (i.e.: "`thi
 ```
 where `context`, `redirect` and `stop` are as outlined in [FlowRouter triggers](https://github.com/kadirahq/flow-router/#triggers) (see this for use of [`stop`](https://github.com/kadirahq/flow-router/#stopping-the-callback-with-triggers)).
 
+The parameters passed into the `AccessCheck` argument map, if any, will be the same as outlined in the Options above, based on the parameters outlined in the `actionFactory` (with inheritance from parent nodes as necessary).
+
 
 #### Additional Properties and Methods (Post Creation)
 
