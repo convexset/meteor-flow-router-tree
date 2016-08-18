@@ -128,6 +128,7 @@ The `where` sub-key is ignored, however and set to refer to the client.
 Generally speaking, client-side failure callbacks should result in routing to a page which the current user is more likely to be authorized to be on. For example, access controls on a restricted route/template might boot an unauthorized user to the "main user dashboard" (MUD?) and access controls on the MUD might boot an unauthorized user to the login page (where probably no access controls apply except perhaps geographical ones by IP address, in which case...)
 
 Access checks are implemented as ["entry triggers"](https://github.com/kadirahq/flow-router/#triggers) and will be the first in the list.
+The failure callback will be called and the used should rely on the invocation context (i.e.: `this`) to identify the "`flow-router-tree`" context and react accordingly.
 
 Checks and failure callbacks are invoked with the following context (i.e.: "`this`"):
 ```
@@ -139,6 +140,8 @@ Checks and failure callbacks are invoked with the following context (i.e.: "`thi
 }
 ```
 where `context`, `redirect` and `stop` are as outlined in [FlowRouter triggers](https://github.com/kadirahq/flow-router/#triggers) (see this for use of [`stop`](https://github.com/kadirahq/flow-router/#stopping-the-callback-with-triggers)).
+
+Note: Due to the nature of how `FlowRouter` is designed, it is recommended that [`stop`](https://github.com/kadirahq/flow-router#stopping-the-callback-with-triggers) (see below) not be used until [PR #681](https://github.com/kadirahq/flow-router/pull/681) is merged as the current (2.12.1) implementation does not handle the "current path state" properly on `stop()`.
 
 The parameters passed into the `AccessCheck` argument map, if any, will be the same as outlined in the Options above, based on the parameters outlined in the `actionFactory` (with inheritance from parent nodes as necessary).
 

@@ -1,5 +1,8 @@
-/* global BlazeLayout: true */
 /* global FlowRouterTree: true */
+import { Meteor } from "meteor/meteor";
+import { BlazeLayout } from "meteor/kadira:blaze-layout";
+import { FlowRouter } from "meteor/kadira:flow-router";
+import { Session } from "meteor/session";
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
@@ -217,6 +220,7 @@ FlowRouterTree = (function() {
 
 			_.forEach(o, function(v, k) {
 				if (k === ACCESS_CHECK_KEY) {
+					// run access-check trigger first
 					ret.unshift(v);
 				} else {
 					ret.push(v);
@@ -255,6 +259,7 @@ FlowRouterTree = (function() {
 						name, argumentMap = x => x
 					}) {
 						if (!allChecksPassed) {
+							// stop on first failure
 							return;
 						}
 						var outcome;
@@ -434,18 +439,6 @@ FlowRouterTree = (function() {
 				}
 			};
 		},
-		// trackRouteMovementFactory: function(logEntry, movementType) {
-		// 	return function trackRouteMovement(context) {
-		// 		var contextInfo = {
-		// 			path: context.path,
-		// 			params: context.params,
-		// 			queryParams: context.queryParams,
-		// 		};
-		// 		if (logEntry) {
-		// 			Meteor.call('requestLog', 'comment', movementType, contextInfo);
-		// 		}
-		// 	};
-		// }
 	});
 
 	return FlowRouterTree;
