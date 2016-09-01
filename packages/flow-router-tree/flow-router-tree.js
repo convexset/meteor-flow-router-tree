@@ -1,42 +1,42 @@
 /* global FlowRouterTree: true */
-import { Meteor } from "meteor/meteor";
-import { BlazeLayout } from "meteor/kadira:blaze-layout";
-import { FlowRouter } from "meteor/kadira:flow-router";
-import { Session } from "meteor/session";
+import { Meteor } from 'meteor/meteor';
+import { BlazeLayout } from 'meteor/kadira:blaze-layout';
+import { FlowRouter } from 'meteor/kadira:flow-router';
+import { Session } from 'meteor/session';
 
 import { checkNpmVersions } from 'meteor/tmeasday:check-npm-versions';
 checkNpmVersions({
-  'package-utils': '^0.2.1',
-  'underscore' : '^1.8.3',
+	'package-utils': '^0.2.1',
+	'underscore': '^1.8.3'
 });
 const PackageUtilities = require('package-utils');
 const _ = require('underscore');
 
-import { AccessCheck } from "meteor/convexset:access-check";
+import { AccessCheck } from 'meteor/convexset:access-check';
 
 FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
 	// Set Up
 	///////////////////////////////////////////////////////////////////////////
 	// Route names and routes
-	var _flowRouterRouteNames = [];
-	var _flowRouterRoutes = [];
-	var __frt = function FlowRouterTree() {};
-	var __nd = function NodeDictionary() {};
-	var __ed = function EdgeDictionary() {};
+	const _flowRouterRouteNames = [];
+	const _flowRouterRoutes = [];
+	const __frt = function FlowRouterTree() {};
+	const __nd = function NodeDictionary() {};
+	const __ed = function EdgeDictionary() {};
 
-	// Flow Router Tree 
-	var FlowRouterTree = new __frt();
+	// Flow Router Tree
+	const FlowRouterTree = new __frt();
 
 	// Node dictionary
-	var _flowRouterNodes = new __nd();
+	const _flowRouterNodes = new __nd();
 	PackageUtilities.addImmutablePropertyValue(FlowRouterTree, 'nodes', _flowRouterNodes);
 
 	// Node tree
-	var _flowRouterTree = new __ed();
+	const _flowRouterTree = new __ed();
 	PackageUtilities.addImmutablePropertyValue(FlowRouterTree, 'tree', _flowRouterTree);
 	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'roots', function roots() {
-		return _.map(_flowRouterTree, function(v, k) {
+		return _.map(_flowRouterTree, function getItemsWithNoParent(v, k) {
 			return {
 				key: k,
 				value: v
@@ -47,37 +47,72 @@ FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
 	// Debug Mode
 	///////////////////////////////////////////////////////////////////////////
-	var SHOW_DEBUG_OUTPUT_ON_SERVER = false;
+	let SHOW_DEBUG_OUTPUT = true;
 	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'showDebugOutputOnServer', function showDebugOutputOnServer() {
-		SHOW_DEBUG_OUTPUT_ON_SERVER = true;
+		SHOW_DEBUG_OUTPUT = true;
 	});
 	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'hideDebugOutput', function hideDebugOutput() {
-		SHOW_DEBUG_OUTPUT_ON_SERVER = false;
+		SHOW_DEBUG_OUTPUT = false;
+	});
+
+	///////////////////////////////////////////////////////////////////////////
+	// Sort Functions
+	///////////////////////////////////////////////////////////////////////////
+	let _triggersEnterSortFunction = function ancestorsFirst(n1, n2) {
+		if (n1.sourceLevelsUp === n2.sourceLevelsUp) {
+			return 0;
+		} else {
+			return n1.sourceLevelsUp < n2.sourceLevelsUp ? 1 : -1;
+		}
+	};
+	PackageUtilities.addPropertyGetterAndSetter(FlowRouterTree, 'triggersEnterSortFunction', {
+		get: () => _triggersEnterSortFunction,
+		set: (fn) => {
+			if (_.isFunction(fn)) {
+				_triggersEnterSortFunction = fn;
+			}
+		}
+	});
+
+	let _triggersExitSortFunction = function descendantsFirst(n1, n2) {
+		if (n1.sourceLevelsUp === n2.sourceLevelsUp) {
+			return 0;
+		} else {
+			return n1.sourceLevelsUp < n2.sourceLevelsUp ? -1 : 1;
+		}
+	};
+	PackageUtilities.addPropertyGetterAndSetter(FlowRouterTree, 'triggersExitSortFunction', {
+		get: () => _triggersExitSortFunction,
+		set: (fn) => {
+			if (_.isFunction(fn)) {
+				_triggersExitSortFunction = fn;
+			}
+		}
 	});
 
 	///////////////////////////////////////////////////////////////////////////
 	// FlowRouterTreeNode
 	///////////////////////////////////////////////////////////////////////////
 	function FlowRouterTreeNode(options) {
-		var instance = this;
+		const instance = this;
 
-		if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-			console.log(" ");
-			console.log("****************************************");
-			console.log("* " + options.name);
-			console.log("****************************************");
+		if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+			console.log(' ');
+			console.log('****************************************');
+			console.log('* ' + options.name);
+			console.log('****************************************');
 		}
-		if ((typeof options.path === "undefined") || (typeof options.path !== "string")) {
-			throw new Meteor.Error("argument-error", "options.path is required and should be a string.");
+		if ((typeof options.path === 'undefined') || (typeof options.path !== 'string')) {
+			throw new Meteor.Error('argument-error', 'options.path is required and should be a string.');
 		}
 
-		if ((typeof options.name === "undefined") || (typeof options.name !== "string") || (options.name.length === 0)) {
-			throw new Meteor.Error("argument-error", "options.name is required and should be a string with positive length.");
+		if ((typeof options.name === 'undefined') || (typeof options.name !== 'string') || (options.name.length === 0)) {
+			throw new Meteor.Error('argument-error', 'options.name is required and should be a string with positive length.');
 		}
 		if (_flowRouterRouteNames.indexOf(options.name) === -1) {
 			_flowRouterRouteNames.push(options.name);
 		} else {
-			throw new Meteor.Error("argument-error", "options.name should be unique.");
+			throw new Meteor.Error('argument-error', 'options.name should be unique.');
 		}
 
 		var _options = _.extend({
@@ -88,7 +123,7 @@ FlowRouterTree = (function() {
 			triggersExit: {},
 			providesParentRoutePrefix: false,
 			makeRoute: true,
-			description: "",
+			description: '',
 			accessChecks: (void 0),  // See: https://atmospherejs.com/convexset/access-check
 		}, options);
 
@@ -102,12 +137,12 @@ FlowRouterTree = (function() {
 			}
 		});
 
-		if (typeof this.makeRoute !== "boolean") {
-			throw new Meteor.Error("argument-error", "options.makeRoute should be a boolean.");
+		if (typeof this.makeRoute !== 'boolean') {
+			throw new Meteor.Error('argument-error', 'options.makeRoute should be a boolean.');
 		}
 
 		if (this.isGroup && this.makeRoute) {
-			throw new Meteor.Error("argument-error", "options.makeRoute should not be true when options.isGroup is true.");
+			throw new Meteor.Error('argument-error', 'options.makeRoute should not be true when options.isGroup is true.');
 		}
 
 		function getLineage(node) {
@@ -123,8 +158,8 @@ FlowRouterTree = (function() {
 		function getActionFactory(node) {
 			if (node.actionFactory !== null) {
 				// Param found
-				if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-					console.log("[Action Factory] Found on " + node.name);
+				if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+					console.log('[Action Factory] Found on ' + node.name);
 					console.log(node.actionFactory);
 				}
 				return node.actionFactory;
@@ -134,16 +169,16 @@ FlowRouterTree = (function() {
 					return getActionFactory(node.parent);
 				} else {
 					// Not found
-					throw new Meteor.Error("action-factory-not-found");
+					throw new Meteor.Error('action-factory-not-found');
 				}
 			}
 		}
 
 		function getParam(node, name) {
-			if (typeof node.params[name] !== "undefined") {
+			if (typeof node.params[name] !== 'undefined') {
 				// Param found
-				if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-					console.log("[Action Parameter] " + name + ": " + node.params[name] + " (from: " + node.name + ")");
+				if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+					console.log('[Action Parameter] ' + name + ': ' + node.params[name] + ' (from: ' + node.name + ')');
 				}
 				return node.params[name];
 			} else {
@@ -152,7 +187,7 @@ FlowRouterTree = (function() {
 					return getParam(node.parent, name);
 				} else {
 					// Not found
-					throw new Meteor.Error("route-parameter-not-found", "Parameter " + name + " not found ");
+					throw new Meteor.Error('route-parameter-not-found', 'Parameter ' + name + ' not found ');
 				}
 			}
 		}
@@ -165,14 +200,18 @@ FlowRouterTree = (function() {
 			return params;
 		}
 
-		function getTriggers(node) {
+		function getTriggers(node, level = 0) {
 			if (!!node) {
 				// Update parent's list
-				var triggers = getTriggers(node.parent);
+				var triggers = getTriggers(node.parent, level + 1);
 				['triggersEnter', 'triggersExit'].forEach(function(k) {
 					_.extend(triggers[k], node[k]);
 					_.map(node[k], function(fn, triggerName) {
-						triggers.source[triggerName] = node.name;
+						triggers.source[k][triggerName] = {
+							name: node.name,
+							node: node,
+							levelsUp: level
+						};
 					});
 				});
 				return triggers;
@@ -181,7 +220,10 @@ FlowRouterTree = (function() {
 				return { // This is the starting point.
 					triggersEnter: {},
 					triggersExit: {},
-					source: {}
+					source: {
+						triggersEnter: {},
+						triggersExit: {},
+					}
 				};
 			}
 		}
@@ -206,28 +248,49 @@ FlowRouterTree = (function() {
 
 		function makeRoute(node) {
 			var prePrefix = getParentPathPrefix(node.parent);
-			if (prePrefix[prePrefix.length - 1] !== "/") {
+			if (prePrefix[prePrefix.length - 1] !== '/') {
 				return prePrefix + '/' + node.path;
 			} else {
 				return prePrefix + node.path;
 			}
 		}
 
-		const ACCESS_CHECK_KEY = "[[[convexset:access-check]]]";
+		const ACCESS_CHECK_KEY = '[[[convexset:access-check]]]';
 
-		function takeNonNullValues(o) {
-			var ret = [];
+		function makeTriggerList(o, sources, type) {
+			const priorityList = [];
+			const unsortedList = [];
 
 			_.forEach(o, function(v, k) {
+				if (v === null) {
+					return;
+				}
 				if (k === ACCESS_CHECK_KEY) {
 					// run access-check trigger first
-					ret.unshift(v);
+					priorityList.unshift({
+						triggerName: k,
+						triggerFunction: v,
+						sourceName: sources[k].name,
+						sourceLevelsUp: sources[k].levelsUp,
+						sourceNode: sources[k].node
+					});
 				} else {
-					ret.push(v);
+					unsortedList.push({
+						triggerName: k,
+						triggerFunction: v,
+						sourceName: sources[k].name,
+						sourceLevelsUp: sources[k].levelsUp,
+						sourceNode: sources[k].node
+					});
 				}
 			});
 
-			return ret.filter(x => x !== null);
+			if (type === 'enter') {
+				return priorityList.concat(unsortedList.sort(_triggersEnterSortFunction));
+			} else if (type === 'exit') {
+				return priorityList.concat(unsortedList.sort(_triggersExitSortFunction));
+			}
+			throw new Meteor.Error('invalid-make-trigger-call');
 		}
 
 		function extendWithAccessChecks(triggers, params) {
@@ -238,13 +301,13 @@ FlowRouterTree = (function() {
 				return ret;
 			}
 
-			if (typeof this.accessChecks === "undefined") {
+			if (typeof this.accessChecks === 'undefined') {
 				return ret;
 			}
 
 			ret[ACCESS_CHECK_KEY] = function accessCheckTrigger(_context, redirect, stop) {
 				var context = {
-					contextType: "flow-router-tree",
+					contextType: 'flow-router-tree',
 					context: _context,
 					redirect: redirect,
 					stop: stop
@@ -252,7 +315,7 @@ FlowRouterTree = (function() {
 				var allChecksPassed = true;
 
 				this.accessChecks
-					.map(o => typeof o === "string" ? {
+					.map(o => typeof o === 'string' ? {
 						name: o
 					} : o)
 					.forEach(function runCheck({
@@ -286,40 +349,52 @@ FlowRouterTree = (function() {
 			// Make a route!!!
 			PackageUtilities.addImmutablePropertyValue(this, 'route', makeRoute(this));
 			if (_flowRouterRoutes.indexOf(this.route) !== -1) {
-				throw new Meteor.Error("repeated-route", this.route + " is already listed.");
+				throw new Meteor.Error('repeated-route', this.route + ' is already listed.');
 			}
 			_flowRouterRoutes.push(this.route);
-			if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-				console.log("Route: " + this.route);
-				console.log("Lineage: " + _.map(getLineage(this), function(node) {
+			if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+				console.log('Route: ' + this.route);
+				console.log('Lineage: ' + _.map(getLineage(this), function(node) {
 					return node.name;
-				}).join(" > "));
+				}).join(' > '));
 			}
 		}
 
 		if (this.providesParentRoutePrefix) {
 			// Generate group path
 			PackageUtilities.addImmutablePropertyValue(this, 'routePrefix', makeRoute(this));
-			if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-				console.log("Parent-Route-Prefix: " + this.routePrefix);
+			if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+				console.log('Parent-Route-Prefix: ' + this.routePrefix);
 			}
 		}
 
 		if (this.makeRoute) {
-			if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-				console.log("");
+			if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+				console.log('');
 			}
-			var triggers = getTriggers(this);
+			var rawTriggers = getTriggers(this);
+			var triggers = {
+				triggersEnter: makeTriggerList(
+					extendWithAccessChecks(rawTriggers.triggersEnter, params),
+					rawTriggers.source.triggersEnter,
+					'enter'
+				),
+				triggersExit: makeTriggerList(
+					rawTriggers.triggersExit,
+					rawTriggers.source.triggersExit,
+					'exit'
+				),
+			}
 			var actionFactory = getActionFactory(this);
 			var params = getParams(this, actionFactory.requiredActionParams);
 
-			if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-				console.log("Triggers: ", triggers);
+			if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+				console.log('Triggers: ', triggers);
 			}
 			FlowRouter.route(this.route, {
 				name: this.name,
-				triggersEnter: takeNonNullValues(extendWithAccessChecks(triggers.triggersEnter, params)),
-				triggersExit: takeNonNullValues(triggers.triggersExit),
+				triggersEnter: triggers.triggersEnter.map(x => x.triggerFunction),
+				triggersExit: triggers.triggersExit.map(x => x.triggerFunction),
 				action: actionFactory.makeAction(params)
 			});
 
@@ -327,9 +402,9 @@ FlowRouterTree = (function() {
 			PackageUtilities.addImmutablePropertyValue(_flowRouterTree, this.name, this.parent && this.parent.name);
 		}
 
-		if (SHOW_DEBUG_OUTPUT_ON_SERVER && Meteor.isServer) {
-			console.log("****************************************");
-			console.log(" ");
+		if (SHOW_DEBUG_OUTPUT && Meteor.isDevelopment) {
+			console.log('****************************************');
+			console.log(' ');
 		}
 	}
 
@@ -341,23 +416,23 @@ FlowRouterTree = (function() {
 
 		// Require parameterizedAction to be a function
 		if (!_.isFunction(parameterizedAction)) {
-			throw new Meteor.Error("argument-error", "parameterizedAction should be a function taking 3 parameters with the 3rd being for action parameters.");
+			throw new Meteor.Error('argument-error', 'parameterizedAction should be a function taking 3 parameters with the 3rd being for action parameters.');
 		}
-		var argumentList = (parameterizedAction).toString().split("{")[0].match(/\(([^\)]*)\)/i)[1].split(",");
-		var numArgs = ((argumentList.length === 1) && (argumentList[0].trim() === "")) ? 0 : argumentList.length; // Yeah, this is ugly
+		var argumentList = (parameterizedAction).toString().split('{')[0].match(/\(([^\)]*)\)/i)[1].split(',');
+		var numArgs = ((argumentList.length === 1) && (argumentList[0].trim() === '')) ? 0 : argumentList.length; // Yeah, this is ugly
 		if (numArgs !== 3) {
-			throw new Meteor.Error("argument-error", "parameterizedAction should be a function taking 3 parameters with the 3rd being for action parameters.");
+			throw new Meteor.Error('argument-error', 'parameterizedAction should be a function taking 3 parameters with the 3rd being for action parameters.');
 		}
 
 		// Require requiredActionParams to be an array
 		if (requiredActionParams instanceof Array) {
 			requiredActionParams.forEach(function(p) {
-				if (typeof p !== "string") {
-					throw new Meteor.Error("argument-error", "requiredActionParams should be an array of strings.");
+				if (typeof p !== 'string') {
+					throw new Meteor.Error('argument-error', 'requiredActionParams should be an array of strings.');
 				}
 			});
 		} else {
-			throw new Meteor.Error("argument-error", "requiredActionParams should be an array of strings.");
+			throw new Meteor.Error('argument-error', 'requiredActionParams should be an array of strings.');
 		}
 
 		// Append requiredActionParams
@@ -366,14 +441,14 @@ FlowRouterTree = (function() {
 		// Create an action given params
 		function makeAction(actionParams) {
 			parameterizedAction.requiredActionParams.forEach(function(p) {
-				if (typeof actionParams[p] === "undefined") {
-					throw new Meteor.Error("required-parameter-absent", "Required parameter " + p + " missing.");
+				if (typeof actionParams[p] === 'undefined') {
+					throw new Meteor.Error('required-parameter-absent', 'Required parameter ' + p + ' missing.');
 				}
 			});
 			var _actionParams = _.extend({}, actionParams);
 
 			// curry and return
-			return function(params, queryParams) {
+			return function action(params, queryParams) {
 				return parameterizedAction(params, queryParams, _actionParams);
 			};
 		}
@@ -428,7 +503,7 @@ FlowRouterTree = (function() {
 
 	// Useful Samples for Triggers
 	PackageUtilities.addImmutablePropertyObject(FlowRouterTree, 'SampleTriggerFactories', {
-		redirectAfterLoginFactory: function(loginRouteName, sessionVariableNameForRedirectPath) {
+		redirectAfterLoginFactory: function redirectAfterLoginFactory(loginRouteName, sessionVariableNameForRedirectPath) {
 			return function redirectAfterLogin() {
 				if (!(Meteor.loggingIn() || Meteor.userId())) {
 					var path = FlowRouter.current().path;

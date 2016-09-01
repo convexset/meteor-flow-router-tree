@@ -11,6 +11,7 @@ A tool for facilitating the creation of a clean set of [FlowRouter](https://gith
 - [Install](#install)
 - [Usage By Example](#usage-by-example)
     - [Options](#options)
+    - [Customizing Trigger Order](#customizing-trigger-order)
     - [The `accessChecks` key: Using convexset:access-check](#the-accesschecks-key-using-convexsetaccess-check)
     - [Additional Properties and Methods (Post Creation)](#additional-properties-and-methods-post-creation)
     - [Possibly Useful Helpers](#possibly-useful-helpers)
@@ -104,7 +105,7 @@ Here are the default options:
 }
 ```
 
-#### Options
+### Options
 
 Option                      | Description
 :-------------------------: | --------------
@@ -119,7 +120,74 @@ Option                      | Description
 `description`               | A text description of the node
 `accessChecks`               | See [convexset:access-check](https://atmospherejs.com/convexset/access-check#meteor-methods-and-publications) and use the same format as the `accessChecks` key. (Leaving unset implies inheritance from parent; Defining `accessChecks` overwrites checks on the parent, if applicable; Set to `null` to not inherit checks from parent)
 
-#### The `accessChecks` key: Using [convexset:access-check](https://atmospherejs.com/convexset/access-check)
+
+### Customizing Trigger Order
+
+The following [compare functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort) for sorting triggers can be set:
+
+ - `FlowRouterTree.triggersEnterSortFunction`
+ - `FlowRouterTree.triggersExitSortFunction`
+
+They compare objects of schema
+```javascript
+{
+    triggerName:     /* the given "trigger name" */,
+    triggerFunction: /* the actual trigger function */,
+    sourceName:      /* name of the source node */,
+    sourceLevelsUp:  /* number of levels up in the route tree where this trigger
+                        comes from. 0 means this the current route; 1 means
+                        its immediate parent */,
+    sourceNode:      /* the node object itself, please don't mishandle */,
+}
+```
+
+The default behaviour is that:
+ - "enter" triggers are ordered by seniority (the most senior ancestor "enter" triggers run first)
+ - "exit" triggers are ordered by youth (the most junior descendant "exit" triggers run first)
+
+One semi-sketchy pattern would be to include a priority note in the trigger name such as:
+```javascript
+    // ...
+    triggersEnter: {
+        someTrigger: someTrigger,
+        otherTrigger: someTrigger,
+        "importantTrigger|priority=3": importantTrigger,
+        "moreImportantTrigger|priority=1": moreImportantTrigger
+    },
+    // ...
+```
+and making changes to the default behaviour like so:
+```javascript
+const originalTriggersEnterSortFunction = FlowRouterTree.triggersEnterSortFunction;
+const originalTriggersExitSortFunction = FlowRouterTree.triggersExitSortFunction;
+function parsePriority(t) {
+    if (t.triggerName.split('|').length < 2) { return Infinity; }
+    const prefix = 'priority=';
+    const s = t.triggerName.split('|')[1] || '';
+    const p = parseFloat(s.substr(s.indexOf(prefix) + prefix.length));
+    return Number.isNaN(p) ? Infinity : p;
+}
+FlowRouterTree.triggersEnterSortFunction = function(t1, t2) {
+    const t1P = parsePriority(t1);
+    const t2P = parsePriority(t2);
+    if (t1P === t2P) {
+        return originalTriggersEnterSortFunction(t1, t2);
+    } else {
+        return t1P < t2P ? -1 : 1;
+    }
+};
+FlowRouterTree.triggersExitSortFunction = function(t1, t2) {
+    const t1P = parsePriority(t1);
+    const t2P = parsePriority(t2);
+    if (t1P === t2P) {
+        return originalTriggersExitSortFunction(t1, t2);
+    } else {
+        return t1P < t2P ? -1 : 1;
+    }
+};
+```
+
+### The `accessChecks` key: Using [convexset:access-check](https://atmospherejs.com/convexset/access-check)
 
 Use the same syntax as access checks for Meteor Methods and Publications in [convexset:access-check](https://atmospherejs.com/convexset/access-check#meteor-methods-and-publications) apply (via the `accessChecks` key).
 
@@ -146,7 +214,7 @@ Note: Due to the nature of how `FlowRouter` is designed, it is recommended that 
 The parameters passed into the `AccessCheck` argument map, if any, will be the same as outlined in the Options above, based on the parameters outlined in the `actionFactory` (with inheritance from parent nodes as necessary).
 
 
-#### Additional Properties and Methods (Post Creation)
+### Additional Properties and Methods (Post Creation)
 
 Property / Method           | Description
 :-------------------------: | --------------
@@ -156,7 +224,7 @@ Property / Method           | Description
 `nodes`                     | a dictionary (object) of node names pointing to nodes
 `tree`                      | a dictionary of nodes names each pointing to the name of the relevant parent node
 
-#### Possibly Useful Helpers
+### Possibly Useful Helpers
 
 The `FlowRouterTree.SampleParameterizedActions` dictionary:
  - `blazeLayoutRenderThreeComponent` with parameters `['layout', 'header', 'content', 'footer']` (actual source featured above)
@@ -166,7 +234,7 @@ The `FlowRouterTree.SampleTriggerFactories` dictionary:
  - `redirectAfterLoginFactory(loginRouteName, sessionVariableNameForRedirectPath)`: Provides route-level authentication, redirecting visitors to the login screen if not authenticated and sends the user back once logged-in. See [this](https://medium.com/@satyavh/using-flow-router-for-authentication-ba7bb2644f42) for more information.
 
 
-#### Debug
+### Debug
  - `FlowRouterTree.showDebugOutputOnServer()`: show debug output on the server
  - `FlowRouterTree.hideDebugOutput()`: stop showing debug output on the server
 
