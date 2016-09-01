@@ -1,7 +1,7 @@
 Package.describe({
 	// [validatis:stack]
 	name: 'convexset:flow-router-tree',
-	version: '0.1.5',
+	version: '0.1.5_1',
 	summary: 'A tool for facilitating the maintenance of FlowRouter routes cleanly.',
 	git: 'https://github.com/convexset/meteor-flow-router-tree',
 	documentation: '../../README.md'

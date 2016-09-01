@@ -47,7 +47,7 @@ FlowRouterTree = (function() {
 	///////////////////////////////////////////////////////////////////////////
 	// Debug Mode
 	///////////////////////////////////////////////////////////////////////////
-	let SHOW_DEBUG_OUTPUT = true;
+	let SHOW_DEBUG_OUTPUT = false;
 	PackageUtilities.addImmutablePropertyFunction(FlowRouterTree, 'showDebugOutputOnServer', function showDebugOutputOnServer() {
 		SHOW_DEBUG_OUTPUT = true;
 	});
