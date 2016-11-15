@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
 import { FlowRouter } from 'meteor/kadira:flow-router';
-import { Session } from 'meteor/session';
 
 let BlazeLayout = { render: () => null };
 if (Meteor.isClient) {
@@ -430,7 +429,7 @@ const _FlowRouterTree = (function() {
 		}
 
 		// Require requiredActionParams to be an array
-		if (_.isArray(requiredActionParams) || (requiredActionParams.filter(p => typeof p !== 'string').length > 0)) {
+		if (!_.isArray(requiredActionParams) || (requiredActionParams.filter(p => typeof p !== 'string').length > 0)) {
 			throw new Meteor.Error('argument-error', 'requiredActionParams should be an array of strings.');
 		}
 
@@ -502,7 +501,8 @@ const _FlowRouterTree = (function() {
 
 	// Useful Samples for Triggers
 	PackageUtilities.addImmutablePropertyObject(FlowRouterTree, 'SampleTriggerFactories', {
-		redirectAfterLoginFactory: function redirectAfterLoginFactory(loginRouteName, sessionVariableNameForRedirectPath) {
+		redirectAfterLoginFactory: Meteor.isServer ? () => () => null : function redirectAfterLoginFactory(loginRouteName, sessionVariableNameForRedirectPath) {
+			import { Session } from 'meteor/session';
 			return function redirectAfterLogin() {
 				if (!(Meteor.loggingIn() || Meteor.userId())) {
 					const path = FlowRouter.current().path;
